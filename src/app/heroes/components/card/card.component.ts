@@ -7,7 +7,7 @@ import { Hero } from '../../interfaces/heroes';
   styles: [],
 })
 export class CardComponent implements OnInit {
-  @Input() hero!: Hero;
+  @Input() public hero!: Hero;
 
   ngOnInit(): void {
     if (!this.hero) throw Error('This property is required')
