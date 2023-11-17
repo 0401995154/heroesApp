@@ -5,6 +5,8 @@ import { HeroesService } from '../../services/heroes.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subscriber, pipe, switchMap } from 'rxjs';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { MatDialog } from '@angular/material/dialog';
+import { ConfirmDialogComponent } from '../../components/confirm-dialog/confirm-dialog.component';
 
 @Component({
   selector: 'app-new-page',
@@ -32,7 +34,8 @@ export class NewPageComponent implements OnInit {
     private service: HeroesService,
     private router: Router,
     private activeRouter: ActivatedRoute,
-    private snackBar: MatSnackBar
+    private snackBar: MatSnackBar,
+    private dialog: MatDialog
   ) {}
 
   ngOnInit(): void {
@@ -58,21 +61,38 @@ export class NewPageComponent implements OnInit {
     if (this.currentHero.id) {
       this.service.updateHero(this.currentHero).subscribe((hero) => {
         //mostrar snakbar
-        this.showSnakBar(`${hero.superhero} actualizado`)
+        this.showSnakBar(`${hero.superhero} actualizado`);
       });
       return;
     }
 
     this.service.addHero(this.currentHero).subscribe((hero) => {
       //mostrar snakbar y redirigir a la página
-      this.router.navigate(['/heroes/edit',hero.id])
-      this.showSnakBar(`${hero.superhero} creado!`)
+      this.router.navigate(['/heroes/edit', hero.id]);
+      this.showSnakBar(`${hero.superhero} creado!`);
+    });
+  }
+
+  onDelete() {
+    if (!this.currentHero.id) throw Error('Hero is required');
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      data: this.heroForm.value,
+    });
+
+    dialogRef.afterClosed().subscribe((result) => {
+      console.log('The dialog was closed');
+      if (!result) return;
+      this.service.deleteHero(this.currentHero.id).subscribe((wasDelete) => {
+        if (wasDelete) {
+          this.router.navigateByUrl('/heroes');
+        }
+      });
     });
   }
 
   showSnakBar(message: string) {
-    this.snackBar.open(message,'donde',{
-      duration:2500
+    this.snackBar.open(message, 'donde', {
+      duration: 2500,
     });
   }
 }
